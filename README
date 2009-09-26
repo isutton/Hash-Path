@@ -1,15 +1,29 @@
 Hash-Path
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+This module was written as proof of concept about how to find data inside a hash of hashes (HoH) with
+unknown structure. You can think that as hierarchical data like LDAP does, so our C<path> could be the
+exactly the same as LDAP's C<dn>, but a bit simpler because we (at least at this moment, who knows) don't
+want to deal with that.
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it get an idea of the modules uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+This is a perfect companion for traversing L<YAML>:
+
+	use Hash::Path;
+	use YAML;
+
+	my ($hash_ref) = Load(<<'EOF');
+	---
+	name: john
+	permissions:
+	  some-module:
+	    - read
+	    - write
+	    - execute
+	  another-module:
+	    - read
+	EOF
+	my $permissions = Hash::Path->get($hash_ref, qw(permissions some-module));
+
+	# $permissions contains [ 'read', 'write', 'execute' ]
 
 INSTALLATION
 
