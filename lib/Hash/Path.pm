@@ -3,30 +3,24 @@ package Hash::Path;
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
+
+use base 'Exporter';
+
+our @EXPORT_OK = qw(hash_path);
 
 sub get {
-    my ( $class, $data_ref, $k, @path ) = @_;
+    my ($class, $data_ref, @path) = @_;
+    return $data_ref unless scalar @path;
+    my $return_value = $data_ref->{ $path[0] };
+    for (1 .. (scalar @path - 1)) {
+        $return_value = $return_value->{ $path[$_] };
+    }
+    return $return_value;
+}
 
-    # at this point, $data_ref may or not be a hash
-    # reference. we must ensure that if $k is not defined,
-    # we return that data without trying to travessing it.
-    return $data_ref if not defined $k;
-
-    # it is pretty self-explained.
-    return Hash::Path->get( $data_ref->{$k}, @path )
-      if (  defined $k
-        and ref($data_ref)         eq 'HASH'
-        and ref( $data_ref->{$k} ) eq 'HASH'
-        and exists $data_ref->{$k} );
-
-    return $data_ref->{$k}
-      if defined $k
-      and ref($data_ref) eq 'HASH'
-      and exists $data_ref->{$k};
-
-    # what about this one?
-    return undef;
+sub hash_path {
+    return __PACKAGE__->get(@_);
 }
 
 1;
@@ -39,7 +33,7 @@ Hash::Path - A simple way to return a path of HoH
 
 =head1 VERSION
 
-0.01
+0.02
 
 =head1 SYNOPSIS
 
@@ -95,7 +89,20 @@ This is a perfect companion for traversing L<YAML>:
 This is the only available method. It traverses the hash reference using the supplied path array,
 returning the value as scalar value.
 
+=item hash_path
+
+        use Hash::Path qw(hash_path);
+        $scalar = hash_path($hash_ref, @path);
+
+Now you can export the C<hash_path> function to be a bit shorter. The
+parameters it takes are the same as C<get>.
+
 =back
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Arthur Axel "fREW" Schmidt "<FREW@cpan.org>" for using this
+module and suggesting a better implementation for the C<get()> method.
 
 =head1 AUTHOR
 
